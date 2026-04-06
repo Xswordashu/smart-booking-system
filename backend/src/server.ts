@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes';
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ mongoose.connect(process.env.MONGO_URI!, {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
+app.use('/api/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });

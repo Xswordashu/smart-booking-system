@@ -1,7 +1,15 @@
 // user.model.ts
-import { Schema, model, Types } from "mongoose";
+import { Schema, model, Types, Document } from "mongoose";
+import bcrypt from "bcryptjs";
 
-const userSchema = new Schema(
+interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
@@ -24,4 +32,22 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-export const User = model("User", userSchema);
+// Hash password before saving
+userSchema.pre("save", async function (this: any, next: any) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function (candidatePassword: string) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+export const User = model<IUser>("User", userSchema);
