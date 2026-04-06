@@ -64,7 +64,13 @@ export const api = createApi({
         body,
       }),
     }),
+    cancelAppointment: build.mutation<{ success: boolean; data: Appointment }, { appointmentId: string }>({
+      query: (body) => ({
+        url: `/api/slots/appointments/${body.appointmentId}/cancel`,
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useGetSlotsQuery, useGetMyAppointmentsQuery, useBookAppointmentMutation } = api;
+export const { useRegisterMutation, useLoginMutation, useGetSlotsQuery, useGetMyAppointmentsQuery, useBookAppointmentMutation, useCancelAppointmentMutation } = api;

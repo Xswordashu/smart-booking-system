@@ -1,15 +1,19 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import ConfirmModal from '@/components/ConfirmModal'
-import { useBookAppointmentMutation, useGetMyAppointmentsQuery, useGetSlotsQuery } from '@/services/api'
-import type { Slot } from '@/services/api'
+import { useBookAppointmentMutation, useCancelAppointmentMutation, useGetMyAppointmentsQuery, useGetSlotsQuery } from '@/services/api'
+import type { Slot, Appointment } from '@/services/api'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
 export default function DashboardPage() {
   const [date, setDate] = useState(TODAY)
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const token = localStorage.getItem('token')
 
   const {
@@ -31,6 +35,7 @@ export default function DashboardPage() {
   })
 
   const [bookAppointment, { isLoading: bookingLoading }] = useBookAppointmentMutation()
+  const [cancelAppointment, { isLoading: cancelingLoading }] = useCancelAppointmentMutation()
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -40,7 +45,12 @@ export default function DashboardPage() {
   const handleSlotClick = (slot: Slot) => {
     if (slot.isBooked) return
     setSelectedSlot(slot)
-    setIsModalOpen(true)
+    setIsBookModalOpen(true)
+  }
+
+  const handleAppointmentCancel = (appointment: Appointment) => {
+    setSelectedAppointment(appointment)
+    setIsCancelModalOpen(true)
   }
 
   const handleConfirmBooking = async () => {
@@ -48,12 +58,28 @@ export default function DashboardPage() {
 
     try {
       await bookAppointment({ slotId: selectedSlot._id }).unwrap()
-      setIsModalOpen(false)
+      setIsBookModalOpen(false)
       setSelectedSlot(null)
       refetchSlots()
       refetchAppointments()
-    } catch (error) {
-      console.error(error)
+      toast.success('Appointment booked successfully!')
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to book appointment')
+    }
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!selectedAppointment) return
+
+    try {
+      await cancelAppointment({ appointmentId: selectedAppointment._id }).unwrap()
+      setIsCancelModalOpen(false)
+      setSelectedAppointment(null)
+      refetchSlots()
+      refetchAppointments()
+      toast.success('Appointment canceled successfully!')
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to cancel appointment')
     }
   }
 
@@ -134,9 +160,22 @@ export default function DashboardPage() {
                   <ul className="space-y-3">
                     {appointments.data.map((appointment) => (
                       <li key={appointment._id} className="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
-                        <div className="font-medium text-slate-900">{new Date(appointment.date).toLocaleDateString()}</div>
-                        <div className="text-sm text-slate-500">{appointment.startTime} – {appointment.endTime}</div>
-                        <div className="text-sm text-slate-500">Status: {appointment.status}</div>
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <div className="font-medium text-slate-900">{new Date(appointment.date).toLocaleDateString()}</div>
+                            <div className="text-sm text-slate-500">{appointment.startTime} – {appointment.endTime}</div>
+                            <div className="text-sm text-slate-500">Status: {appointment.status}</div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleAppointmentCancel(appointment)}
+                            className="text-slate-500 hover:text-red-600"
+                            type="button"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -150,7 +189,7 @@ export default function DashboardPage() {
       </div>
 
       <ConfirmModal
-        open={isModalOpen}
+        open={isBookModalOpen}
         title="Confirm appointment"
         description={
           selectedSlot
@@ -160,7 +199,21 @@ export default function DashboardPage() {
         confirmText="Book appointment"
         isLoading={bookingLoading}
         onConfirm={handleConfirmBooking}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => setIsBookModalOpen(false)}
+      />
+
+      <ConfirmModal
+        open={isCancelModalOpen}
+        title="Cancel appointment"
+        description={
+          selectedAppointment
+            ? `Are you sure you want to cancel your appointment on ${new Date(selectedAppointment.date).toLocaleDateString()} from ${selectedAppointment.startTime} to ${selectedAppointment.endTime}?`
+            : 'Select an appointment to cancel.'
+        }
+        confirmText="Cancel appointment"
+        isLoading={cancelingLoading}
+        onConfirm={handleConfirmCancel}
+        onClose={() => setIsCancelModalOpen(false)}
       />
     </main>
   )

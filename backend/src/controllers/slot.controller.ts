@@ -100,7 +100,7 @@ export class SlotController {
 
   static async cancelAppointmentController(req: Request, res: Response) {
     try {
-      const appointmentId = req.params.appointmentId;
+      const appointmentId = req.params.id;
       const userId = (req as any).user?.id || (req as any).user?._id;
 
       if (!userId) {
