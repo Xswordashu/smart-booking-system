@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
+import slotRoutes from './routes/slot.routes';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ mongoose.connect(process.env.MONGO_URI!, {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/slots', slotRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
