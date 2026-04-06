@@ -6,6 +6,7 @@
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "generate-slots": "ts-node src/scripts/generateSlots.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
   "dependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.2",
+    "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "mongoose": "^9.4.1",
     "nodemon": "^3.1.14",
