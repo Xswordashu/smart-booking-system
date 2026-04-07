@@ -111,12 +111,12 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-              <div className="max-h-[420px] overflow-y-auto px-4 py-4 sm:px-5">
+              <div className=" px-2 py-4 sm:px-5">
                 {slotsLoading && <p className="text-slate-600">Loading slots…</p>}
                 {slotsError && <p className="text-red-600">Could not load slots.</p>}
 
                 {slots?.data?.length ? (
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 max-h-[420px] overflow-y-auto px-2">
                     {slots.data.map((slot) => (
                       <li
                         key={slot._id}
@@ -128,7 +128,7 @@ export default function DashboardPage() {
                             <div className="text-sm text-slate-500">{slot.isBooked ? 'Booked' : 'Available'}</div>
                           </div>
                           {!slot.isBooked ? (
-                            <Button variant="secondary" size="sm" onClick={() => handleSlotClick(slot)} type="button">
+                            <Button variant="secondary" size="sm" onClick={() => handleSlotClick(slot)} type="button" className='rounded-[8px]'>
                               Book
                             </Button>
                           ) : (
@@ -169,6 +169,7 @@ export default function DashboardPage() {
                           <Button
                             variant="ghost"
                             size="icon"
+                            disabled={appointment.status?.toLowerCase() === 'cancelled'}
                             onClick={() => handleAppointmentCancel(appointment)}
                             className="text-slate-500 hover:text-red-600"
                             type="button"

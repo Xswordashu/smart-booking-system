@@ -66,7 +66,7 @@ export default function LoginPage() {
 
           {error && <p className="text-sm text-red-600">Login failed. Check your credentials.</p>}
 
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className='rounded-[8px]'>
             {isLoading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
